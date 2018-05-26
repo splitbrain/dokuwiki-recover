@@ -2,17 +2,18 @@
 <?php
 
 $phpfiles = array(
+    'GUI.php',
     'Check.php',
     'Recover.php',
-    'GUI.php'
 );
 
-$htmls = glob('html/*.html');
-$styles = glob('css/*.css');
+$htmls = glob('res/*.html');
+$styles = glob('res/*.css');
 sort($styles);
 
 // header
 $source = "<?php\n";
+$source .= "/*> __NOPHP__ <!--*/\n";
 $source .= "// built " . date('Y-m-d H:I:s') . "\n";
 $source .= "define('ISBUILD', true);\n";
 
@@ -40,6 +41,7 @@ $source = str_replace('__STYLES__', $css, $source);
 $source .= "\n\n";
 $source .= "\$gui = new GUI();\n";
 $source .= "\$gui->run();\n";
+$source .= "//-->\n";
 
 file_put_contents('dokuwiki-recover.php', $source);
 system('php -l dokuwiki-recover.php');
