@@ -4,9 +4,12 @@
 $phpfiles = array(
     'Check.php',
     'Recover.php',
+    'GUI.php'
 );
 
 $htmls = glob('html/*.html');
+$styles = glob('css/*.css');
+sort($styles);
 
 // header
 $source = "<?php\n";
@@ -22,14 +25,21 @@ foreach ($phpfiles as $file) {
 foreach ($htmls as $file) {
     $name = '__' . strtoupper(basename($file, '.html')) . '__';
     $html = file_get_contents($file);
-    $html = addslashes($html);
+    $html = addcslashes($html, "'");
     $source = str_replace($name, $html, $source);
 }
 
+$css = '';
+foreach ($styles as $file) {
+    $css .= addcslashes(file_get_contents($file), "'");
+}
+$source = str_replace('__STYLES__', $css, $source);
+
+
 // main
 $source .= "\n\n";
-$source .= "\$recover = new Recover();\n";
-$source .= "\$recover->run();\n";
+$source .= "\$gui = new GUI();\n";
+$source .= "\$gui->run();\n";
 
 file_put_contents('dokuwiki-recover.php', $source);
 system('php -l dokuwiki-recover.php');

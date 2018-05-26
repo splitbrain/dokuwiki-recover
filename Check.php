@@ -96,7 +96,7 @@ class Check
             array('checkFunctionAvailability', 'imagecreatetruecolor', false),
 
 
-            array('checkFunctionAvailability', 'floob', true),
+            #array('checkFunctionAvailability', 'floob', true),
             array('checkFunctionAvailability', 'flab', false),
         );
     }
@@ -135,18 +135,20 @@ class Check
     public function resultAsHtml($data)
     {
         $html = '';
-        $html .= '<div class="' . $data['success'] . '">';
-        $html .= '<span class="name">' . self::hsc($data['name']) . '</span>';
-        $html .= '<span class="state">' . self::hsc($data['state']) . '</span>';
+        $html .= '<dl class="' . $data['success'] . '">';
+        $html .= '<dt class="name">' . self::hsc($data['name']) . '</dt>';
+        $html .= '<dd>';
+        $html .= '<code class="state">' . self::hsc($data['state']) . '</code>';
         if ($data['success'] !== self::SUCCESS) {
             if (isset($data['hint'])) {
-                $html .= '<span class="hint">' . self::hsc($data['hint']) . '</span>';
+                $html .= ' <span class="hint">' . self::hsc($data['hint']) . '</span>';
             }
             if (isset($data['more'])) {
-                $html .= '<a class="more" href="' . self::LEARNMORE . $data['more'] . '">Learn more</a>';
+                $html .= ' <a class="more" href="' . self::LEARNMORE . $data['more'] . '">Learn more</a>';
             }
         }
-        $html .= '</div>';
+        $html .= '</dd>';
+        $html .= '</dl>';
 
         return $html;
     }
@@ -158,7 +160,7 @@ class Check
      */
     public function echoAsHtml($data)
     {
-        echo $this->resultAsText($data);
+        echo $this->resultAsHtml($data);
     }
 
     /**

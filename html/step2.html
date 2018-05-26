@@ -1,0 +1,30 @@
+<h1>Reset DokuWiki</h1>
+
+<p>
+    So your environment looks good, but your wiki is still broken? Let's see what we can do.
+</p>
+
+<blockquote class="error">
+    First of all: if you still can log into your wiki and use the admin interface, it's <b>not broken</b> in a way that
+    requires this script. <a href="?step=delete">Delete this script</a> and fix stuff manually. Seriously, using this
+    script will create more work for you than just fixing manually. <b>You have been warned</b>.
+</blockquote>
+
+<p>Now, if you continue, this is what will happen:</p>
+
+<ol>
+    <li>switch back to the default template</li>
+    <li>switch the language to English</li>
+    <li>disable all plugins except the bare minimum</li>
+    <li>ensure ACLs are enabled</li>
+    <li>switch to the <code>authplain</code> Authentication backend</li>
+    <li>turn the group <code>dokuwiki-recovery</code> into superusers</li>
+    <li>create a new user in that group (we'll show you the user and password)</li>
+</ol>
+
+<p>This should turn your wiki back to the most barebone functionality again. Enough to log in with the new user and fix
+    things manually.</p>
+
+<p>This is the Danger button! Only click if you're sure…</p>
+
+<a href="?step=3" class="button" style="float: right">Step 2: Reset DokuWiki ⮕</a>

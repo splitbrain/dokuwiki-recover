@@ -2,58 +2,82 @@
 
 class Recover
 {
-    /**
-     * Run the script
-     */
-    public function run()
-    {
-        echo '__HEADER__';
-        try {
-            $this->perFlightCheck();
-            $this->step0();
-
-        } catch (Exception $e) {
-            $this->showError($e);
-        }
-        echo '__FOOTER__';
-    }
-
-
-    protected function step0()
-    {
-        echo '__INTRO__';
-    }
+    protected $plugindir;
+    protected $pluginconf;
+    protected $userconf;
+    protected $localconf;
 
     /**
-     * @param Exception $e
+     * Recover constructor.
+     *
+     * Ensures all the files are writable before we even continue
      */
-    protected function showError($e)
+    public function __construct()
     {
-        echo '<div class="error">';
-        echo htmlspecialchars($e->getMessage());
-        echo '</div>';
-    }
+        $this->plugindir = __DIR__ . '/lib/plugins';
+        $this->pluginconf = __DIR__ . '/conf/plugins.local.php';
+        $this->userconf = __DIR__ . '/conf/users.auth.php';
+        $this->localconf = __DIR__ . '/conf/local.php';
 
-    /**
-     * Ensures this script may run at all
-     */
-    protected function perFlightCheck()
-    {
         if (defined('ISBUILD') && (time() - filemtime(__FILE__) > 60 * 60)) {
-            // FIXME implement deletion here
+            try {
+                self::selfDelete();
+                $msg = 'The file has been deleted automatically. Upload it again if you really need it.';
+            } catch (Exception $e) {
+                $msg = $e->getMessage();
+            }
 
             throw new RuntimeException(
                 'This file was uploaded more than an hour ago. I simply assume that it was ' .
-                'forgotten and should not be here anymore. Upload it again if you really need it.'
+                'forgotten and should not be here anymore. ' . $msg
             );
         }
 
-        if (!file_exists(__DIR__ . ' / doku . php')) {
+        if (!file_exists(__DIR__ . '/doku.php')) {
             throw new RuntimeException(
-                'doku . php does not exist next to the recovery file located in ' . __DIR__ .
-                ' . Did you upload the recovery file to the wrong location ? '
+                'doku.php does not exist next to the recovery file located in ' . __DIR__ .
+                '. Did you upload the recovery file to the wrong location ?'
             );
         }
+
+        if (!is_dir($this->plugindir)) {
+            throw new RuntimeException("Plugin directory $this->plugindir seems not to exist");
+        }
+
+
+        if (!is_writable($this->pluginconf)) {
+            throw new RuntimeException("Can't write plugin configuration at $this->pluginconf");
+        }
+
+        if (!file_exists($this->localconf)) {
+            throw new RuntimeException("Local config $this->localconf does not exist. Was this wiki never configured?");
+        }
+
+        if (!is_writable($this->localconf)) {
+            throw new RuntimeException("Can't write to local configuration at $this->localconf");
+        }
+
+        if (!file_exists($this->userconf)) {
+            throw new RuntimeException("User config $this->userconf does not exist. Was this wiki never configured?");
+        }
+
+        if (!is_writable($this->userconf)) {
+            throw new RuntimeException("Can't write to user configuration at $this->userconf");
+        }
+
+    }
+
+    /**
+     * Execute the reset
+     *
+     * @return string[] user, password
+     */
+    public function run()
+    {
+        $this->disableAllPlugins();
+        $result = $this->addNewAdmin();
+        $this->setFailoverConfig();
+        return $result;
     }
 
     /**
@@ -61,23 +85,13 @@ class Recover
      */
     protected function disableAllPlugins()
     {
-        $plugindir = __DIR__ . ' / lib / plugins';
-        if (!is_dir($plugindir)) {
-            throw new RuntimeException("Plugin directory $plugindir seems not to exist");
-        }
-
-        $pluginconf = __DIR__ . ' / conf / plugins . local . php';
-        if (!is_writable($pluginconf)) {
-            throw new RuntimeException("Can't write plugin configuration at $pluginconf");
-        }
-
         // absolute minimum set of plugins:
         $wanted = array('acl', 'authplain', 'config', 'extension', 'usermanager');
 
         // find all potential plugins
-        $plugins = glob("$plugindir/*", GLOB_ONLYDIR);
+        $plugins = glob("$this->plugindir/*", GLOB_ONLYDIR);
         $plugins = array_map('basename', $plugins);
-        $plugins = array_intersect($plugins, $wanted);
+        $plugins = array_diff($plugins, $wanted);
 
 
         $newconfig = "\n\n";
@@ -87,9 +101,9 @@ class Recover
             $newconfig .= "\$plugins['$plugin'] = 0;\n";
         }
 
-        $ok = file_put_contents($pluginconf, $newconfig, FILE_APPEND);
+        $ok = file_put_contents($this->pluginconf, $newconfig, FILE_APPEND);
         if (!$ok) {
-            throw new RuntimeException("Writing plugin configuration to $pluginconf failed");
+            throw new RuntimeException("Writing plugin configuration to $this->pluginconf failed");
         }
     }
 
@@ -98,15 +112,6 @@ class Recover
      */
     protected function setFailoverConfig()
     {
-        $config = __DIR__ . '/conf/local.php';
-        if (!file_exists($config)) {
-            throw new RuntimeException("Local config $config does not exist. Was this wiki never configured?");
-        }
-
-        if (!is_writable($config)) {
-            throw new RuntimeException("Can't write to local configuration at $config");
-        }
-
         $newconfig = "\n\n";
         $newconfig .= "// The following lines were added be dokuwiki-recover\n";
         $newconfig .= "// " . date('Y-m-d H:i:s') . "\n";
@@ -117,9 +122,9 @@ class Recover
         $newconfig .= "\$conf['lang'] = 'en';\n";
         $newconfig .= "\$conf['template'] = 'dokuwiki';\n";
 
-        $ok = file_put_contents($config, $newconfig, FILE_APPEND);
+        $ok = file_put_contents($this->localconf, $newconfig, FILE_APPEND);
         if (!$ok) {
-            throw new RuntimeException("Writing local configuration to $config failed");
+            throw new RuntimeException("Writing local configuration to $this->localconf failed");
         }
     }
 
@@ -130,27 +135,30 @@ class Recover
      */
     protected function addNewAdmin()
     {
-        $config = __DIR__ . '/conf/users.auth.php';
-        if (!file_exists($config)) {
-            throw new RuntimeException("User config $config does not exist. Was this wiki never configured?");
-        }
-
-        if (!is_writable($config)) {
-            throw new RuntimeException("Can't write to user configuration at $config");
-        }
-
         // random new user/password, not cryptographically sound, but good enough for temporary
         $user = 'recover-' . substr(md5(mt_rand() . time()), 0, 6);
         $pass = substr(md5(mt_rand() . time()), 0, 8);
         $hash = sha1($pass);
 
-        $newline = "\n$user:$hash:DokuWiki Recovery User. Delete after use:none@example.com:dokuwiki-recover\n";
-        $ok = file_put_contents($config, $newline, FILE_APPEND);
+        $newline = "\n$user:$hash:DokuWiki Recovery User. Delete after use:$user@example.com:dokuwiki-recover\n";
+        $ok = file_put_contents($this->userconf, $newline, FILE_APPEND);
         if (!$ok) {
-            throw new RuntimeException("Writing user configuration to $config failed");
+            throw new RuntimeException("Writing user configuration to $this->userconf failed");
         }
 
         return array($user, $pass);
     }
 
+    /**
+     * Deletes the script
+     */
+    public static function selfDelete()
+    {
+        if (!@unlink(__FILE__)) {
+            throw new RuntimeException(
+                'The script (located at ' . __FILE__ . ') could not be deleted automatically. You need to delete ' .
+                'it yourself. Not doing so is a huge security risk!'
+            );
+        }
+    }
 }

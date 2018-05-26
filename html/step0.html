@@ -1,0 +1,43 @@
+<h1>DokuWiki Problems, eh?</h1>
+<p>
+    This script helps you to reconfigure your DokuWiki to a state that should allow you to login again and manually
+    fix things.
+</p>
+
+<blockquote class="error">
+    <b>Important:</b> Having this script on your server is a security risk. Be sure to <a href="?step=delete">remove</a>
+    it as soon as you're done with it.
+</blockquote>
+
+<p>This script has two steps:</p>
+
+<ol>
+    <li>Check Requirements</li>
+    <li>Reset DokuWiki</li>
+</ol>
+
+<p>
+    None of the steps will touch your actual data (pages, media) so you don't need to worry.
+</p>
+
+<p>
+    Using the script happens on your own risk. Please keep in mind that this script will <b>not</b> work for you when…
+</p>
+
+<ul>
+    <li>…certain files are not writable (the script will tell you about it)</li>
+    <li>…you moved your <code>conf</code> directory to a different place (the script might think it succeeded, but
+        it will still not work for you)
+    </li>
+    <li>…your PHP doesn't work at all (you will see some message further up)</li>
+    <li>…the requirements to run DokuWiki aren't met (Step 1 will help you with that)</li>
+</ul>
+
+<p>
+    The next step will simply check if your PHP setup matches all the requirments of the newest DokuWiki release.
+    Maybe your setup is simply missing a little something? That step will not modify anything, it just checks things
+    so its perfectly save to click that button :-).
+</p>
+
+<a href="?step=1" class="button" style="float: right">Step 1: Check Requirements ⮕</a>
+

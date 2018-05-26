@@ -1,0 +1,35 @@
+body {
+    font-family: sans-serif;
+}
+
+.error {
+    border-color: #a00;
+}
+
+.footer {
+    clear: both;
+    margin: 8em 0 3em 0;
+}
+
+.requirements dd code {
+    display: inline-block;
+    max-width: 61rem;
+    overflow: auto;
+}
+
+.requirements dl.success dt::after {
+    content: ' looks good✅';
+    color: #0a0;
+}
+
+.requirements dl.warning dt::after {
+    content: ' might need improvement❗';
+    color: #aa0;
+}
+.requirements dl.failure dt::after {
+    content: ' shows a problem❌';
+    color: #a00;
+
+}
+
+
