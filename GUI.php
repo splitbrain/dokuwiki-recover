@@ -11,7 +11,7 @@ class GUI
         header('X-Robots-Tag: noindex');
         echo '__HEADER__';
         try {
-            $step = isset($_REQUEST['step']) ? $_REQUEST['step'] : 0;
+            $step = isset($_REQUEST['step']) ? (int) $_REQUEST['step'] : 0;
             switch ($step) {
                 case 1:
                     $this->step1();
@@ -22,7 +22,7 @@ class GUI
                 case 3:
                     $this->step3();
                     break;
-                case 'delete':
+                case -1:
                     $this->stepDelete();
                     break;
                 default:
@@ -85,7 +85,7 @@ class GUI
 
         echo '<blockquote>';
         echo '<h2>User Created</h2>';
-        echo '<p>A new user was created with the follwing credentials. Use it to log back into your DokuWiki:</p>';
+        echo '<p>A new user was created with the following credentials. Use it to log back into your DokuWiki:</p>';
         echo '<dl>';
         echo '<dt>User:</dt>';
         echo "<dd>$user</dd>";
@@ -96,7 +96,7 @@ class GUI
 
         try {
             Recover::selfDelete();
-            echo '<p>This script itself has been automatically deleted.</p>';
+            echo '<p>✅ This script itself has been automatically deleted.</p>';
         } catch (Exception $e) {
             echo '<blockquote class="error">';
             echo $e->getMessage();

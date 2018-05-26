@@ -94,10 +94,6 @@ class Check
             array('checkFunctionAvailability', 'utf8_encode', false),
             array('checkFunctionAvailability', 'utf8_decode', false),
             array('checkFunctionAvailability', 'imagecreatetruecolor', false),
-
-
-            #array('checkFunctionAvailability', 'floob', true),
-            array('checkFunctionAvailability', 'flab', false),
         );
     }
 
