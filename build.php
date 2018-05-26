@@ -44,8 +44,12 @@ $source .= "\$gui->run();\n";
 $source .= "//-->\n";
 
 if(!is_dir('dist')) mkdir('dist');
+copy('README.md', 'dist/README.md');
 file_put_contents('dist/dokuwiki-recover.php', $source);
-system('php -l dist/dokuwiki-recover.php');
+$ok = 0;
+system('php -l dist/dokuwiki-recover.php', $ok);
+
+exit($ok);
 
 
 
