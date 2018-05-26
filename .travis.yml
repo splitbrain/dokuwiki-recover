@@ -12,7 +12,7 @@ deploy:
   provider: pages
   skip-cleanup: true
   github-token: $DEPLOYTOKEN
-  keep-history: true
   target-branch: release
+  local-dir: dist
   on:
     branch: master

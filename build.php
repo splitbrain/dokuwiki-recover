@@ -43,8 +43,9 @@ $source .= "\$gui = new GUI();\n";
 $source .= "\$gui->run();\n";
 $source .= "//-->\n";
 
-file_put_contents('dokuwiki-recover.php', $source);
-system('php -l dokuwiki-recover.php');
+if(!is_dir('dist')) mkdir('dist');
+file_put_contents('dist/dokuwiki-recover.php', $source);
+system('php -l dist/dokuwiki-recover.php');
 
 
 
