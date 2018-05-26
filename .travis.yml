@@ -8,6 +8,9 @@ matrix:
       dist: precise
 script:
   - php build.php
+branches:
+  except:
+    - release
 deploy:
   provider: pages
   skip-cleanup: true
