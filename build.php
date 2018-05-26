@@ -10,12 +10,12 @@ $htmls = glob('html/*.html');
 
 // header
 $source = "<?php\n";
-$source = "// built " . date('Y-m-d H:I:s') . "\n";
-$source = "define('ISBUILD', true);\n";
+$source .= "// built " . date('Y-m-d H:I:s') . "\n";
+$source .= "define('ISBUILD', true);\n";
 
 foreach ($phpfiles as $file) {
     $content = file_get_contents($file);
-    $content = preg_replace('/^<?php/', '', $content);
+    $content = preg_replace('/^<\?php/', '', $content);
     $source .= $content;
 }
 
@@ -32,6 +32,7 @@ $source .= "\$recover = new Recover();\n";
 $source .= "\$recover->run();\n";
 
 file_put_contents('dokuwiki-recover.php', $source);
+system('php -l dokuwiki-recover.php');
 
 
 
