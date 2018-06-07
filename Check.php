@@ -32,6 +32,7 @@ class Check
         foreach ($checks as $entry) {
             $func = array_shift($entry);
             $result = call_user_func_array(array($this, $func), $entry);
+            if ($result === null) continue;
             $counts[$result['success']]++;
             if (is_callable($formatter)) $formatter($result);
         }
@@ -94,6 +95,10 @@ class Check
             array('checkFunctionAvailability', 'utf8_encode', false),
             array('checkFunctionAvailability', 'utf8_decode', false),
             array('checkFunctionAvailability', 'imagecreatetruecolor', false),
+
+            array('checkIniOff', 'open_basedir', false),
+            array('checkIniOff', 'short_open_tag', false),
+            array('checkIniOn', 'date.timezone', false),
         );
     }
 
@@ -329,6 +334,11 @@ class Check
         );
     }
 
+    /**
+     * Ensure the locale is UTF-8 aware
+     *
+     * @return array
+     */
     public function checkLocale()
     {
         $loc = setlocale(LC_ALL, 0);
@@ -347,6 +357,52 @@ class Check
             $data['hint'] = 'Locale seems not to be a UTF-8 locale, that may cause trouble';
         }
         return $data;
+    }
+
+    /**
+     * Ensure the given php.ini value is off
+     *
+     * @param string $var the setting to check
+     * @param bool $musthave should this absolutely be disabled, or is it just good advise?
+     * @return array|null
+     */
+    public function checkIniOff($var, $musthave = true)
+    {
+        if (!function_exists('ini_get')) return null;
+
+        $fail = ($musthave) ? self::FAILURE : self::WARNING;
+
+        $value = ini_get($var);
+        $result = (bool)$value;
+        return array(
+            'name' => "php.ini setting $var",
+            'state' => $value,
+            'success' => ($result) ? $fail : self::SUCCESS,
+            'hint' => "Disable $var in your php.ini"
+        );
+    }
+
+    /**
+     * Ensure the given php.ini value is set
+     *
+     * @param string $var the setting to check
+     * @param bool $musthave should this absolutely be enabled, or is it just good advise?
+     * @return array|null
+     */
+    public function checkIniOn($var, $musthave = true)
+    {
+        if (!function_exists('ini_get')) return null;
+
+        $fail = ($musthave) ? self::FAILURE : self::WARNING;
+
+        $value = ini_get($var);
+        $result = (bool)$value;
+        return array(
+            'name' => "php.ini setting $var",
+            'state' => $value,
+            'success' => ($result) ? self::SUCCESS : $fail,
+            'hint' => "Set $var in your php.ini"
+        );
     }
 
     // endregion
