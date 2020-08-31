@@ -8,6 +8,7 @@ class GUI
      */
     public function run()
     {
+        header('Content-type: text/html; charset=utf-8');
         header('X-Robots-Tag: noindex');
         echo '__HEADER__';
         try {
