@@ -51,6 +51,7 @@ class Check
             array('checkPhpVersion', '5.6.0'),
             array('checkMbStringExtension'),
             array('checkSSL'),
+            array('checkSSLCerts'),
             array('checkPregUtf8'),
             array('checkPregUnicode'),
             array('checkLocale'),
@@ -300,6 +301,46 @@ class Check
             'success' => $ok ? self::SUCCESS : self::FAILURE,
             'more' => 'ssl'
         );
+    }
+
+    /**
+     * Check if there is any certificate information available
+     *
+     * @return array
+     */
+    public function checkSSLCerts()
+    {
+        $info = array(
+            'name' => 'SSL Certificate Info',
+            'state' => 'missing',
+            'success' => self::FAILURE,
+            'more' => 'ssl'
+        );
+
+
+        if (!function_exists('openssl_get_cert_locations')) {
+            return $info;
+        }
+
+        $stores = openssl_get_cert_locations();
+
+        foreach (array('ini_cafile', 'default_cert_file') as $key) {
+            if (!empty($stores[$key]) && file_exists($stores[$key])) {
+                $info['success'] = self::SUCCESS;
+                $info['state'] = $stores[$key];
+                return $info;
+            }
+        }
+
+        foreach (array('ini_capath', 'default_cert_dir') as $key) {
+            if (!empty($stores[$key]) && is_dir($stores[$key]) && glob($stores[$key] . '/*')) {
+                $info['success'] = self::SUCCESS;
+                $info['state'] = $stores[$key];
+                return $info;
+            }
+        }
+
+        return $info;
     }
 
     /**
