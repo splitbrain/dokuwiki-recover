@@ -1102,7 +1102,7 @@ class Recover
     {
         // random new user/password, not cryptographically sound, but good enough for temporary
         $user = 'recover-' . substr(md5(mt_rand() . time()), 0, 6);
-        $pass = substr(md5(mt_rand() . time()), 0, 8);
+        $pass = substr(md5(mt_rand() . time()), 0, 14);
         $hash = sha1($pass);
 
         $newline = "\n$user:$hash:DokuWiki Recovery User. Delete after use:$user@example.com:dokuwiki-recover\n";
